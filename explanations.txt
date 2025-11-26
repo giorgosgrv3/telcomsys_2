@@ -1,0 +1,89 @@
+
+--------- Why do we sample?? What is sampling period?? ---------
+
+Computers only understand discrete numbers. Since a computer has finite memory, we cannot store an infinite number of points for a 
+signal like sin(t) from t=0 to t=1.
+Instead, we take snapshots at discrete points.
+Continuous time signal: x(t) exists for all t
+Discrete time signal: x[n] exists for discrete integer steps n
+
+-- The time between two consecutive samples is called the sampling period, Ts.
+Ts = 1 / f_s
+where f_s is the sampling frequency.
+If Ts is too small, we will have too many samples and waste memory.
+If Ts is too large, we will miss important details in the signal.
+
+e.g. Ts=0.1, then we have data for the signal at t = 0, 0.1, 0.2, 0.3, ...
+
+-- The Nyquist rate is the minimum sampling frequency required to avoid aliasing.
+f_Nyquist = 1 / (2 * Ts)
+where Ts is the sampling period.
+
+
+--------- arange() ---------
+
+`arange(start, stop, step)` returns an array with evenly spaced elements as per the interval.
+The interval includes `start` but excludes `stop`.
+
+Examples:
+`arange(3)` -> `[0, 1, 2]`
+`arange(3, 7)` -> `[3, 4, 5, 6]`
+`arange(0, 1, 0.2)` -> `[0., 0.2, 0.4, 0.6, 0.8]`
+
+In the context of `convxaxis`:
+`arange(N_y)` creates an array of integers `[0, 1, 2, ..., N_y - 1]`.
+Multiplying by `Ts` scales these integers to time steps: `[0, Ts, 2*Ts, ...]`.
+Adding `start` shifts the time axis to the correct starting point.
+
+
+--------- Task 1.b: PSD Derivation (Exercise 4.7.2) ---------
+
+Signal: s(t) = sum_i s_i g(t - iT)
+Symbols: s_i = b_i - b_{i-2}, where b_i are i.i.d. bits (0 or 1) with P(0)=P(1)=0.5.
+Pulse: g(t) is a rectangular pulse of duration T and energy 1.
+
+1. Autocorrelation of Symbols R_s[k] = E[s_i s_{i+k}]
+   Since E[s_i] = 0 (mean is zero):
+   
+   - k = 0:
+     R_s[0] = E[s_i^2] = E[(b_i - b_{i-2})^2] 
+            = E[b_i^2] - 2E[b_i]E[b_{i-2}] + E[b_{i-2}^2]
+            = 0.5 - 2(0.5)(0.5) + 0.5 = 0.5
+
+   - k = +/- 1:
+     R_s[1] = E[(b_i - b_{i-2})(b_{i+1} - b_{i-1})] = 0 (indices don't overlap)
+
+   - k = +/- 2:
+     R_s[2] = E[(b_i - b_{i-2})(b_{i+2} - b_i)]
+            = E[b_i b_{i+2}] - E[b_i^2] - E[b_{i-2}b_{i+2}] + E[b_{i-2}b_i]
+            = 0.25 - 0.5 - 0.25 + 0.25 = -0.25
+
+   - |k| > 2: R_s[k] = 0
+
+2. Autocorrelation of the Process R_ss(t)
+   R_ss(t) = (1/T) * sum_k R_s[k] * R_g(t - kT)
+   
+   For rectangular pulse g(t) of energy 1, R_g(t) = Lambda(t/T).
+   
+   R_ss(t) = (1/T) * [ 0.5*Lambda(t/T) - 0.25*Lambda((t+2T)/T) - 0.25*Lambda((t-2T)/T) ]
+           = (1/2T)*Lambda(t/T) - (1/4T)*Lambda((t+2T)/T) - (1/4T)*Lambda((t-2T)/T)
+   
+   (This matches the formula from the image!)
+
+3. Power Spectral Density S(f) = Fourier{R_ss(t)}
+   Fourier{Lambda(t/T)} = T * sinc^2(fT)
+   
+   S(f) = (1/2T)*(T*sinc^2(fT)) - (1/4T)*(T*sinc^2(fT))*exp(j*4*pi*f*T) - (1/4T)*(T*sinc^2(fT))*exp(-j*4*pi*f*T)
+        = sinc^2(fT) * [ 0.5 - 0.5 * cos(4*pi*f*T) ]
+        = sinc^2(fT) * sin^2(2*pi*f*T)
+
+
+--------- Periodogram Definition ---------
+
+The formula from the notes is:
+(1/T) * |X_T(f)|^2
+
+Here, 'T' refers to the total duration of the truncated signal x_T(t) that we are observing.
+In our code, this corresponds to `T_total`.
+
+T_total = (Number of samples) * Ts
