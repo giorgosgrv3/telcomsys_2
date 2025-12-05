@@ -41,6 +41,7 @@ min = np.min
 max = np.max
 round = np.round
 abs = np.abs
+sum = np.sum
 angle = np.angle
 real = np.real
 imag = np.imag
@@ -122,6 +123,7 @@ subplot = plt.subplot
 plot = plt.plot
 semilogy = plt.semilogy
 fill = plt.fill
+axvspan = plt.axvspan
 
 # Axes limits
 xlim = plt.xlim
@@ -134,6 +136,7 @@ title = plt.title
 xlabel = plt.xlabel
 ylabel = plt.ylabel
 legend = plt.legend
+grid = plt.grid
 
 # Figure showing
 tight_layout = plt.tight_layout

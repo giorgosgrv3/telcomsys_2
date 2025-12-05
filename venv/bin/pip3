@@ -1,4 +1,4 @@
-#!/home/giosthspanagias/Documents/THL2_assignment/venv/bin/python3
+#!/home/giwrghs/projects/telcomsys_2/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
